@@ -2,7 +2,15 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: Destroy environment
+          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7}
 jobs:
   
   create_infrastructure:
@@ -29,24 +37,32 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i inventory.txt main.yml
-  smoke_test:
-    docker: 
-      - image: alpine:latest
-    steps:
-      - run: apk add --update curl
-      - run: 
-          name: smoke smoke_test
-          command: |
-            URL="https://blog.udacity.com/"
+  # smoke_test:
+  #   docker: 
+  #     - image: alpine:latest
+  #   steps:
+  #     - run: apk add --update curl
+  #     - run: 
+  #         name: smoke smoke_test
+  #         command: |
+  #           URL="https://blog.udacity.com/"
 
-            #Testing if website exists
-            if curl -s --head ${URL}
-            then
-              return 0
-            else
-              return 1
-            fi
-
+  #           #Testing if website exists
+  #           if curl -s --head ${URL}
+  #           then
+  #             return 0
+  #           else
+  #             return 1
+  #           fi
+    smoke_test:
+      docker:
+        - image: alpine:latest
+      steps:
+        - run:
+            name: Test jobs
+            #Failing the job intentionally to simulate an error
+            command: return 1
+        - destroy_environment
       
 
 
@@ -56,7 +72,7 @@ jobs:
 workflows:
   infra-workflow:
     jobs:
-      # - create_infrastructure
+      - create_infrastructure
       # - configure_infrastructure
       - smoke_test
       
