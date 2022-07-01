@@ -63,9 +63,8 @@ jobs:
           name: Test jobs
           #Failing the job intentionally to simulate an error
           command: return 1
-      - run:
-          - destroy_environment
-          when: on_fail
+      - destroy_environment
+        when: on_fail
       
 
 
