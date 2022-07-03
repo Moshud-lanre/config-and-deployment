@@ -86,7 +86,7 @@ jobs:
       - run: yum install -y tar gzip
       - run:
           name: Fetch and save the old PipelineID (Bucket name) responsible for the last release.
-           command: |
+          command: |
             aws cloudformation list-exports --query "Exports[?Name==\`PipelineID\`].Value" --no-paginate --output text > ~/textfile.txt
       - persist_to_workspace:
           root: ~/ 
